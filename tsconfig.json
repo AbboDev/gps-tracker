@@ -1,5 +1,7 @@
 {
   "extends": "@quasar/app/tsconfig-preset",
+  "jsx": "preserve",
+  "allowJs": true,
   "compilerOptions": {
     "baseUrl": "."
   }
