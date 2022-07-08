@@ -8,12 +8,14 @@ export type UniquePoint = Point & {
 };
 
 export interface MapStateInterface {
+  current: string | null;
   points: UniquePoint[];
   center: Point;
 }
 
 function state(): MapStateInterface {
   return {
+    current: null,
     points: [],
     center: {
       lat: 45.69173591,

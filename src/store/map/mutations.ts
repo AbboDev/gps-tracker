@@ -7,20 +7,23 @@ const mutation: MutationTree<MapStateInterface> = {
   },
 
   push(state: MapStateInterface, point: UniquePoint) {
-    console.debug('mutations', point, state);
     state.points.push(point);
+  },
+
+  setCurrent(state: MapStateInterface, id: string) {
+    state.current = id;
   },
 
   pushMultiple(state: MapStateInterface, points: UniquePoint[]) {
     state.points = state.points.concat(points);
   },
 
-  update(state: MapStateInterface, { point, data }) {
+  update(state: MapStateInterface, { point, position }) {
     const index = state.points.indexOf(point as UniquePoint);
 
     state.points[index] = {
       ...state.points[index],
-      ...data,
+      ...position,
     };
   },
 

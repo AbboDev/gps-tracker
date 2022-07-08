@@ -18,25 +18,16 @@
           {{ (item.lat, item.lng) }}
         </l-popup>
       </l-marker>
-
-      <l-control-zoom position="bottomright" />
     </l-map>
   </q-page>
 </template>
 
 <script lang="ts">
-import { uid } from 'quasar';
+import { uid, useQuasar } from 'quasar';
 import { defineComponent, ref } from 'vue';
-import { useQuasar } from 'quasar';
-import { UniquePoint } from 'src/store/map/state';
+import { Point, UniquePoint } from 'src/store/map/state';
 
-import {
-  LMap,
-  LPopup,
-  LMarker,
-  LTileLayer,
-  LControlZoom,
-} from '@vue-leaflet/vue-leaflet';
+import { LMap, LPopup, LMarker, LTileLayer } from '@vue-leaflet/vue-leaflet';
 
 export default defineComponent({
   components: {
@@ -44,7 +35,6 @@ export default defineComponent({
     LPopup,
     LMarker,
     LTileLayer,
-    LControlZoom,
   },
   name: 'PageIndex',
   data() {
@@ -72,7 +62,7 @@ export default defineComponent({
     },
   },
   methods: {
-    addMarker(event: GeolocationPosition) {
+    addMarker(event: GeolocationPosition): string {
       const id = uid();
       const marker: UniquePoint = {
         id,
@@ -80,35 +70,87 @@ export default defineComponent({
         lng: parseFloat(event.coords.longitude.toFixed(8)),
       };
 
-      this.$q.notify(JSON.stringify(marker));
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.$store.dispatch('map/push', marker);
+
+      return id;
+    },
+    updateMarker(id: string, event: GeolocationPosition): void {
+      const position: Point = {
+        lat: parseFloat(event.coords.latitude.toFixed(8)),
+        lng: parseFloat(event.coords.longitude.toFixed(8)),
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.$store.dispatch('map/update', {
+        id,
+        position,
+      });
+    },
+    showError(error: GeolocationPositionError): void {
+      this.$q.notify(error.message);
+    },
+    changeCenter(center: Point | Event) {
+      let newCenter: Point = this.center;
+
+      if (center instanceof Event) {
+        console.debug(center);
+        // const center = Object.values(event.target.getCenter())
+        //   .map((coordinate) => {
+        //     return parseFloat(coordinate.toFixed(8));
+        //   });
+      } else {
+        newCenter = center;
+      }
+
+      this.center = newCenter;
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.$store.dispatch('map/updateCenter', newCenter);
     },
   },
   created() {
     const $q = useQuasar();
 
-    //do we support geolocation
     if (!('geolocation' in navigator)) {
       $q.notify('Geolocation is not available.');
       return;
     }
 
-    // this.gettingLocation = true;
-    // get position
+    $q.notify('Fetching geolocation...');
+
     navigator.geolocation.getCurrentPosition(
-      (pos: GeolocationPosition) => {
-        console.debug(pos);
-        // this.gettingLocation = false;
-        // this.location = pos;
-        $q.notify(`${pos.coords.latitude} ${pos.coords.longitude}`);
-        this.addMarker(pos);
+      (position: GeolocationPosition) => {
+        $q.notify('Current position fetched!');
+
+        this.changeCenter({
+          lat: parseFloat(position.coords.latitude.toFixed(8)),
+          lng: parseFloat(position.coords.longitude.toFixed(8)),
+        });
+
+        let current = this.$store.state.map.current;
+        if (!current) {
+          current = this.addMarker(position);
+        }
+
+        this.$store
+          .dispatch('map/setCurrent', current)
+          .then(() => {
+            navigator.geolocation.watchPosition(
+              (position: GeolocationPosition) => {
+                if (this.$store.state.map.current) {
+                  this.updateMarker(this.$store.state.map.current, position);
+                }
+              },
+              this.showError.bind(this)
+            );
+          })
+          .catch((error) => {
+            console.error(error);
+            $q.notify(JSON.stringify(error));
+          });
       },
-      (err) => {
-        // this.gettingLocation = false;
-        // this.errorStr = err.message;
-        $q.notify(err.message);
-      }
+      this.showError.bind(this)
     );
   },
 });
