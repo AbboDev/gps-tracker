@@ -11,7 +11,6 @@
         v-for="(item, index) in $store.state.map.points"
         :key="`marker-${index}`"
         :lat-lng="[item.lat, item.lng]"
-        draggable
       >
         >
         <l-popup>
