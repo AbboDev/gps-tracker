@@ -18,7 +18,11 @@
         </l-popup>
       </l-marker>
 
-      <l-polyline :lat-lngs="getCurrentHistoryFormatted()" color="red" />
+      <l-polyline
+        :lat-lngs="getCurrentHistoryFormatted()"
+        color="red"
+        v-if="$store.state.app.showHistoryPath"
+      />
     </l-map>
   </q-page>
 </template>

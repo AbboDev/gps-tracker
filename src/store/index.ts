@@ -7,7 +7,9 @@ import {
 } from 'vuex';
 
 import map from './map';
+import app from './app';
 import { MapStateInterface } from './map/state';
+import { AppStateInterface } from './app/state';
 
 /*
  * If not building with SSR mode, you can
@@ -21,6 +23,7 @@ import { MapStateInterface } from './map/state';
 export interface StateInterface {
   // Define your own store structure, using submodules if needed
   map: MapStateInterface;
+  app: AppStateInterface;
   // Declared as unknown to avoid linting issue. Best to strongly type as per the line above.
   // example: unknown;
 }
@@ -40,6 +43,7 @@ export default store(function (/* { ssrContext } */) {
   const Store = createStore<StateInterface>({
     modules: {
       map,
+      app,
     },
 
     // enable strict mode (adds overhead!)

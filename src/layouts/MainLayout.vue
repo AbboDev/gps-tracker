@@ -18,19 +18,30 @@
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list class="column no-wrap" style="height: 100%">
         <q-item-label header> Menù di navigazione </q-item-label>
+
+        <q-item clickable v-ripple @click="showHistoryPath">
+          <q-item-section avatar>
+            <q-icon name="add_location_alt" />
+          </q-item-section>
+
+          <q-item-section>
+            <q-item-label>Mostra percorso fatto</q-item-label>
+          </q-item-section>
+        </q-item>
+
         <q-separator />
 
         <q-scroll-area style="height: 100%">
-        <q-item
+          <q-item
             v-for="(item, index) in getCurrentHistoryFormatted().reverse()"
-          :key="`history-${index}`"
+            :key="`history-${index}`"
             clickable
             v-ripple
-        >
-          <q-item-section>
-            <q-item-label>{{ index }} {{ item }}</q-item-label>
-          </q-item-section>
-        </q-item>
+          >
+            <q-item-section>
+              <q-item-label>{{ index }} {{ item }}</q-item-label>
+            </q-item-section>
+          </q-item>
         </q-scroll-area>
       </q-list>
     </q-drawer>
@@ -62,6 +73,9 @@ export default defineComponent({
     toggleLeftDrawer() {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       this.leftDrawerOpen = !this.leftDrawerOpen;
+    },
+    showHistoryPath() {
+      void this.$store.dispatch('app/toggleHistoryPath');
     },
   },
 });
