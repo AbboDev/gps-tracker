@@ -85,8 +85,7 @@ export default defineComponent({
         history: [],
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.$store.dispatch('map/push', marker);
+      void this.$store.dispatch('map/push', marker);
 
       return id;
     },
@@ -96,8 +95,7 @@ export default defineComponent({
         lng: parseFloat(event.coords.longitude.toFixed(8)),
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.$store.dispatch('map/update', {
+      void this.$store.dispatch('map/update', {
         id,
         position,
       });
@@ -120,8 +118,7 @@ export default defineComponent({
 
       this.center = newCenter;
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.$store.dispatch('map/updateCenter', newCenter);
+      void this.$store.dispatch('map/updateCenter', newCenter);
     },
   },
   created() {
