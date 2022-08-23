@@ -17,6 +17,8 @@
           {{ (item.lat, item.lng) }}
         </l-popup>
       </l-marker>
+
+      <l-polyline :lat-lngs="getCurrentHistoryFormatted()" color="red" />
     </l-map>
   </q-page>
 </template>
@@ -24,9 +26,18 @@
 <script lang="ts">
 import { uid, useQuasar } from 'quasar';
 import { defineComponent, ref } from 'vue';
+import { createNamespacedHelpers } from 'vuex';
+const { mapGetters } = createNamespacedHelpers('map');
+
 import { Point, UniquePoint } from 'src/store/map/state';
 
-import { LMap, LPopup, LMarker, LTileLayer } from '@vue-leaflet/vue-leaflet';
+import {
+  LMap,
+  LPopup,
+  LMarker,
+  LTileLayer,
+  LPolyline,
+} from '@vue-leaflet/vue-leaflet';
 
 export default defineComponent({
   components: {
@@ -34,6 +45,7 @@ export default defineComponent({
     LPopup,
     LMarker,
     LTileLayer,
+    LPolyline,
   },
   name: 'PageIndex',
   data() {
@@ -46,6 +58,9 @@ export default defineComponent({
         zoom.value = value;
       },
     };
+  },
+  computed: {
+    ...mapGetters(['getCurrentHistoryFormatted']),
   },
   watch: {
     '$store.state.map.center'() {

@@ -19,7 +19,7 @@
       <q-list>
         <q-item-label header> Essential Links </q-item-label>
         <q-item
-          v-for="(item, index) in getCurrentHistory()"
+          v-for="(item, index) in getCurrentHistoryFormatted()"
           :key="`history-${index}`"
         >
           <q-item-section>
@@ -49,7 +49,7 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapGetters(['getCurrentHistory']),
+    ...mapGetters(['getCurrentHistoryFormatted']),
   },
 
   methods: {
