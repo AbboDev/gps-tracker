@@ -18,6 +18,14 @@
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
         <q-item-label header> Essential Links </q-item-label>
+        <q-item
+          v-for="(item, index) in getCurrentHistory()"
+          :key="`history-${index}`"
+        >
+          <q-item-section>
+            <q-item-label>{{ index }} {{ item }}</q-item-label>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 
@@ -29,6 +37,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { createNamespacedHelpers } from 'vuex';
+const { mapGetters } = createNamespacedHelpers('map');
 
 export default defineComponent({
   name: 'MainLayout',
@@ -38,9 +48,13 @@ export default defineComponent({
       leftDrawerOpen: false,
     };
   },
+  computed: {
+    ...mapGetters(['getCurrentHistory']),
+  },
 
   methods: {
     toggleLeftDrawer() {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       this.leftDrawerOpen = !this.leftDrawerOpen;
     },
   },

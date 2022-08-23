@@ -1,5 +1,5 @@
 import { MutationTree } from 'vuex';
-import { MapStateInterface, Point, UniquePoint } from './state';
+import { HistoryPoint, MapStateInterface, Point, UniquePoint } from './state';
 
 const mutation: MutationTree<MapStateInterface> = {
   updateCenter(state: MapStateInterface, center: Point) {
@@ -18,13 +18,22 @@ const mutation: MutationTree<MapStateInterface> = {
     state.points = state.points.concat(points);
   },
 
-  update(state: MapStateInterface, { point, position }) {
-    const index = state.points.indexOf(point as UniquePoint);
+  update(state: MapStateInterface, { index, position }) {
+    const point = state.points[index as number];
 
-    state.points[index] = {
-      ...state.points[index],
-      ...position,
+    const lastPoint: HistoryPoint = {
+      coords: {
+        lat: point.lat,
+        lng: point.lng,
+      },
+      timestamp: Date.now(),
     };
+
+    point.lat = (position as Point).lat;
+    point.lng = (position as Point).lng;
+    point.history.push(lastPoint);
+
+    state.points[index as number] = point;
   },
 
   remove(state: MapStateInterface, point: UniquePoint) {

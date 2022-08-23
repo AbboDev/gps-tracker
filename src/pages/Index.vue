@@ -68,6 +68,7 @@ export default defineComponent({
         id,
         lat: parseFloat(event.coords.latitude.toFixed(8)),
         lng: parseFloat(event.coords.longitude.toFixed(8)),
+        history: [],
       };
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises

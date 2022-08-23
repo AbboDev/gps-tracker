@@ -3,8 +3,14 @@ export type Point = {
   lng: number;
 };
 
+export type HistoryPoint = {
+  coords: Point;
+  timestamp: number;
+};
+
 export type UniquePoint = Point & {
   id: string;
+  history: HistoryPoint[];
 };
 
 export interface MapStateInterface {
