@@ -16,16 +16,22 @@
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <q-list>
-        <q-item-label header> Essential Links </q-item-label>
+      <q-list class="column no-wrap" style="height: 100%">
+        <q-item-label header> Menù di navigazione </q-item-label>
+        <q-separator />
+
+        <q-scroll-area style="height: 100%">
         <q-item
-          v-for="(item, index) in getCurrentHistoryFormatted()"
+            v-for="(item, index) in getCurrentHistoryFormatted().reverse()"
           :key="`history-${index}`"
+            clickable
+            v-ripple
         >
           <q-item-section>
             <q-item-label>{{ index }} {{ item }}</q-item-label>
           </q-item-section>
         </q-item>
+        </q-scroll-area>
       </q-list>
     </q-drawer>
 
