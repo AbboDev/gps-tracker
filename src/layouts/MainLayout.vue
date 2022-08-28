@@ -36,9 +36,9 @@
         <q-separator />
 
         <q-scroll-area style="height: 100%">
-          <q-item v-for="(item, index) in getCurrentHistoryFormatted().reverse()" :key="`history-${index}`" clickable v-ripple>
+          <q-item v-for="(item, index) in getCurrentHistoryFormatted()" :key="`history-${index}`" clickable v-ripple>
             <q-item-section>
-              <q-item-label>{{ index }} {{ item }}</q-item-label>
+              <q-item-label>{{ item }}</q-item-label>
             </q-item-section>
           </q-item>
         </q-scroll-area>

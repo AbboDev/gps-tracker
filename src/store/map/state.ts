@@ -1,3 +1,5 @@
+import { Dictionary } from 'src/components/models';
+
 export type Point = {
   lat: number;
   lng: number;
@@ -9,20 +11,17 @@ export type HistoryPoint = {
 };
 
 export type UniquePoint = Point & {
-  id: string;
   history: HistoryPoint[];
 };
 
 export interface MapStateInterface {
-  current: string | null;
-  points: UniquePoint[];
+  points: Dictionary<UniquePoint>;
   center: Point;
 }
 
 function state(): MapStateInterface {
   return {
-    current: null,
-    points: [],
+    points: {},
     center: {
       lat: 45.69173591,
       lng: 9.23902452,

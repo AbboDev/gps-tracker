@@ -1,25 +1,27 @@
 import { MutationTree } from 'vuex';
 import { HistoryPoint, MapStateInterface, Point, UniquePoint } from './state';
 
+interface PushObject {
+  id: string;
+  point: UniquePoint;
+}
+
+interface UpdateObject {
+  id: string;
+  position: Point;
+}
+
 const mutation: MutationTree<MapStateInterface> = {
   updateCenter(state: MapStateInterface, center: Point) {
     state.center = center;
   },
 
-  push(state: MapStateInterface, point: UniquePoint) {
-    state.points.push(point);
+  push(state: MapStateInterface, { id, point }: PushObject) {
+    state.points[id] = point;
   },
 
-  setCurrent(state: MapStateInterface, id: string) {
-    state.current = id;
-  },
-
-  pushMultiple(state: MapStateInterface, points: UniquePoint[]) {
-    state.points = state.points.concat(points);
-  },
-
-  update(state: MapStateInterface, { index, position }) {
-    const point = state.points[index as number];
+  update(state: MapStateInterface, { id, position }: UpdateObject) {
+    const point = state.points[id];
 
     const lastPoint: HistoryPoint = {
       coords: {
@@ -29,17 +31,15 @@ const mutation: MutationTree<MapStateInterface> = {
       timestamp: Date.now(),
     };
 
-    point.lat = (position as Point).lat;
-    point.lng = (position as Point).lng;
-    point.history.push(lastPoint);
+    point.lat = position.lat;
+    point.lng = position.lng;
+    point.history.unshift(lastPoint);
 
-    state.points[index as number] = point;
+    state.points[id] = point;
   },
 
-  remove(state: MapStateInterface, point: UniquePoint) {
-    const index = state.points.indexOf(point);
-
-    state.points.splice(index, 1);
+  remove(state: MapStateInterface, id: string) {
+    delete state.points[id];
   },
 };
 

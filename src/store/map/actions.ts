@@ -1,15 +1,16 @@
+import { point } from 'leaflet';
 import { ActionTree } from 'vuex';
 import { StateInterface } from '../index';
 import { HistoryPoint, MapStateInterface, Point, UniquePoint } from './state';
 
+interface PushObject {
+  id: string;
+  point: UniquePoint;
+}
+
 const actions: ActionTree<MapStateInterface, StateInterface> = {
   updateCenter({ commit }, center: Point) {
-    if (
-      Array.isArray(center) &&
-      center.length === 2 &&
-      !isNaN(center.lat) &&
-      !isNaN(center.lng)
-    ) {
+    if (Array.isArray(center) && center.length === 2 && !isNaN(center.lat) && !isNaN(center.lng)) {
       commit('updateCenter', center);
     }
   },
@@ -22,7 +23,7 @@ const actions: ActionTree<MapStateInterface, StateInterface> = {
   setCurrent({ commit }, id: string) {
     commit('setCurrent', id);
   },
-  push({ commit }, point: UniquePoint) {
+  push({ commit }, { id, point }: PushObject) {
     const currentPoint: HistoryPoint = {
       coords: {
         lat: point.lat,
@@ -32,26 +33,25 @@ const actions: ActionTree<MapStateInterface, StateInterface> = {
     };
 
     point.history.push(currentPoint);
-    commit('push', point);
+    commit('push', { id, point });
   },
-  pushMultiple({ commit }, points: UniquePoint[]) {
-    commit('pushMultiple', points);
-  },
-  update({ commit, getters }, { id, position }) {
+  update({ commit }, { id, position }) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    const index: number = getters.getPointIndex(id);
-
-    if (index > -1) {
-      commit('update', { index, position });
+    if (!point) {
+      throw new Error('ID mancante');
     }
+
+    commit('update', { id, position });
   },
-  remove({ commit, getters }, id) {
+  remove({ commit, getters }, id: string) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     const point = getters.getPoint(id);
 
-    if (point) {
-      commit('remove', point);
+    if (!point) {
+      throw new Error('ID mancante');
     }
+
+    commit('remove', id);
   },
 };
 

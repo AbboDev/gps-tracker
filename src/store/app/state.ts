@@ -1,9 +1,6 @@
 import { uid } from 'quasar';
 import { Peer, DataConnection } from 'peerjs';
-
-interface Dictionary<Type> {
-  [key: string]: Type;
-}
+import { Dictionary } from '../../components/models';
 
 export interface AppStateInterface {
   id: string;

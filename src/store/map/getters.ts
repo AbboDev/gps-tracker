@@ -5,21 +5,17 @@ import { MapStateInterface, UniquePoint, HistoryPoint } from './state';
 const getters: GetterTree<MapStateInterface, StateInterface> = {
   getPoint(state) {
     return (id: string) => {
-      return state.points.find((item: UniquePoint) => {
-        return item.id === id;
-      });
+      return state.points[id];
+
+      // return state.points.find((item: UniquePoint) => {
+      //   return item.id === id;
+      // });
     };
   },
-  getPointIndex(state, getters) {
-    return (id: string) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-      return state.points.indexOf(getters.getPoint(id) as UniquePoint);
-    };
-  },
-  getCurrentPoint(state, getters) {
+  getCurrentPoint(state, getters, rootState) {
     return () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-      const point: UniquePoint = getters.getPoint(state.current) as UniquePoint;
+      const point: UniquePoint = getters.getPoint(rootState.app.id) as UniquePoint;
       return point;
     };
   },
@@ -40,7 +36,7 @@ const getters: GetterTree<MapStateInterface, StateInterface> = {
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       return history.map((point: HistoryPoint) => {
-        return [point.coords.lat, point.coords.lng];
+        return [point.coords.lat, point.coords.lng, new Date(point.timestamp).toLocaleString('it-IT')];
       });
     };
   },

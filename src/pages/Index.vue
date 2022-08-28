@@ -1,48 +1,29 @@
 <template>
   <q-page class="row items-stretch justify-evenly">
     <l-map style="height: auto" :tap="false" :zoom="zoom" :center="center">
-      <l-tile-layer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        layer-type="base"
-        name="OpenStreetMap"
-        :attribution="$store.state.app.id"
-      />
+      <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" layer-type="base" name="OpenStreetMap" :attribution="$store.state.app.id" />
 
-      <l-marker
-        v-for="(item, index) in $store.state.map.points"
-        :key="`marker-${index}`"
-        :lat-lng="[item.lat, item.lng]"
-      >
+      <l-marker v-for="(item, index) in $store.state.map.points" :key="`marker-${index}`" :lat-lng="[item.lat, item.lng]">
         >
         <l-popup>
           {{ (item.lat, item.lng) }}
         </l-popup>
       </l-marker>
 
-      <l-polyline
-        :lat-lngs="getCurrentHistoryFormatted()"
-        color="red"
-        v-if="$store.state.app.showHistoryPath"
-      />
+      <l-polyline :lat-lngs="getCurrentHistoryFormatted()" color="red" v-if="$store.state.app.showHistoryPath" />
     </l-map>
   </q-page>
 </template>
 
 <script lang="ts">
-import { uid, useQuasar } from 'quasar';
+import { useQuasar } from 'quasar';
 import { defineComponent, ref } from 'vue';
 import { createNamespacedHelpers } from 'vuex';
 const { mapGetters } = createNamespacedHelpers('map');
 
 import { Point, UniquePoint } from 'src/store/map/state';
 
-import {
-  LMap,
-  LPopup,
-  LMarker,
-  LTileLayer,
-  LPolyline,
-} from '@vue-leaflet/vue-leaflet';
+import { LMap, LPopup, LMarker, LTileLayer, LPolyline } from '@vue-leaflet/vue-leaflet';
 
 export default defineComponent({
   components: {
@@ -81,18 +62,14 @@ export default defineComponent({
     },
   },
   methods: {
-    addMarker(event: GeolocationPosition): string {
-      const id = uid();
-      const marker: UniquePoint = {
-        id,
+    addMarker(event: GeolocationPosition, id?: string): Promise<any> {
+      const point: UniquePoint = {
         lat: parseFloat(event.coords.latitude.toFixed(8)),
         lng: parseFloat(event.coords.longitude.toFixed(8)),
         history: [],
       };
 
-      void this.$store.dispatch('map/push', marker);
-
-      return id;
+      return this.$store.dispatch('map/push', { id: id || this.$store.state.app.id, point });
     },
     updateMarker(id: string, event: GeolocationPosition): void {
       const position: Point = {
@@ -136,39 +113,25 @@ export default defineComponent({
 
     $q.notify('Fetching geolocation...');
 
-    navigator.geolocation.getCurrentPosition(
-      (position: GeolocationPosition) => {
-        $q.notify('Current position fetched!');
+    navigator.geolocation.getCurrentPosition((position: GeolocationPosition) => {
+      $q.notify('Current position fetched!');
 
-        this.changeCenter({
-          lat: parseFloat(position.coords.latitude.toFixed(8)),
-          lng: parseFloat(position.coords.longitude.toFixed(8)),
+      this.changeCenter({
+        lat: parseFloat(position.coords.latitude.toFixed(8)),
+        lng: parseFloat(position.coords.longitude.toFixed(8)),
+      });
+
+      this.addMarker(position)
+        .then(() => {
+          navigator.geolocation.watchPosition((position: GeolocationPosition) => {
+            this.updateMarker(this.$store.state.app.id, position);
+          }, this.showError.bind(this));
+        })
+        .catch((error) => {
+          console.error(error);
+          $q.notify(JSON.stringify(error));
         });
-
-        let current = this.$store.state.map.current;
-        if (!current) {
-          current = this.addMarker(position);
-        }
-
-        this.$store
-          .dispatch('map/setCurrent', current)
-          .then(() => {
-            navigator.geolocation.watchPosition(
-              (position: GeolocationPosition) => {
-                if (this.$store.state.map.current) {
-                  this.updateMarker(this.$store.state.map.current, position);
-                }
-              },
-              this.showError.bind(this)
-            );
-          })
-          .catch((error) => {
-            console.error(error);
-            $q.notify(JSON.stringify(error));
-          });
-      },
-      this.showError.bind(this)
-    );
+    }, this.showError.bind(this));
   },
 });
 </script>
