@@ -2,7 +2,14 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          aria-label="Menu"
+          @click="toggleLeftDrawer"
+        />
 
         <q-toolbar-title> Quasar App </q-toolbar-title>
       </q-toolbar>
@@ -18,7 +25,9 @@
           </q-item-section>
 
           <q-item-section>
-            <q-item-label v-if="$store.state.app.showHistoryPath">Nascondi percorso fatto</q-item-label>
+            <q-item-label v-if="$store.state.app.showHistoryPath"
+              >Nascondi percorso fatto</q-item-label
+            >
             <q-item-label v-else>Mostra percorso fatto</q-item-label>
           </q-item-section>
         </q-item>
@@ -35,8 +44,26 @@
 
         <q-separator />
 
+        <q-item
+          v-for="(connection, id) in $store.state.app.group"
+          :key="`device-${id}`"
+          clickable
+          v-ripple
+        >
+          <q-item-section>
+            <q-item-label>{{ id }}</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-separator v-if="hasConnections()" />
+
         <q-scroll-area style="height: 100%">
-          <q-item v-for="(item, index) in getCurrentHistoryFormatted()" :key="`history-${index}`" clickable v-ripple>
+          <q-item
+            v-for="(item, index) in getCurrentHistoryFormatted()"
+            :key="`history-${index}`"
+            clickable
+            v-ripple
+          >
             <q-item-section>
               <q-item-label>{{ item }}</q-item-label>
             </q-item-section>
@@ -54,7 +81,8 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { createNamespacedHelpers } from 'vuex';
-const { mapGetters } = createNamespacedHelpers('map');
+const { mapGetters: mapGettersForMap } = createNamespacedHelpers('map');
+const { mapGetters: mapGettersForApp } = createNamespacedHelpers('app');
 
 export default defineComponent({
   name: 'MainLayout',
@@ -65,7 +93,8 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapGetters(['getCurrentHistoryFormatted']),
+    ...mapGettersForMap(['getCurrentHistoryFormatted']),
+    ...mapGettersForApp(['hasConnections']),
   },
 
   methods: {

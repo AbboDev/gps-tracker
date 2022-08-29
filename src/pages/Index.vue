@@ -1,16 +1,29 @@
 <template>
   <q-page class="row items-stretch justify-evenly">
     <l-map style="height: auto" :tap="false" :zoom="zoom" :center="center">
-      <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" layer-type="base" name="OpenStreetMap" :attribution="$store.state.app.id" />
+      <l-tile-layer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        layer-type="base"
+        name="OpenStreetMap"
+        :attribution="$store.state.app.id"
+      />
 
-      <l-marker v-for="(item, index) in $store.state.map.points" :key="`marker-${index}`" :lat-lng="[item.lat, item.lng]">
+      <l-marker
+        v-for="(item, index) in $store.state.map.points"
+        :key="`marker-${index}`"
+        :lat-lng="[item.lat, item.lng]"
+      >
         >
         <l-popup>
-          {{ (item.lat, item.lng) }}
+          {{ index }}
         </l-popup>
       </l-marker>
 
-      <l-polyline :lat-lngs="getCurrentHistoryFormatted()" color="red" v-if="$store.state.app.showHistoryPath" />
+      <l-polyline
+        :lat-lngs="getCurrentHistoryFormatted()"
+        color="red"
+        v-if="$store.state.app.showHistoryPath"
+      />
     </l-map>
   </q-page>
 </template>
@@ -23,7 +36,13 @@ const { mapGetters } = createNamespacedHelpers('map');
 
 import { Point, UniquePoint } from 'src/store/map/state';
 
-import { LMap, LPopup, LMarker, LTileLayer, LPolyline } from '@vue-leaflet/vue-leaflet';
+import {
+  LMap,
+  LPopup,
+  LMarker,
+  LTileLayer,
+  LPolyline,
+} from '@vue-leaflet/vue-leaflet';
 
 export default defineComponent({
   components: {
@@ -62,16 +81,19 @@ export default defineComponent({
     },
   },
   methods: {
-    addMarker(event: GeolocationPosition, id?: string): Promise<any> {
+    addMarker(event: GeolocationPosition, id?: string): Promise<unknown> {
       const point: UniquePoint = {
         lat: parseFloat(event.coords.latitude.toFixed(8)),
         lng: parseFloat(event.coords.longitude.toFixed(8)),
         history: [],
       };
 
-      return this.$store.dispatch('map/push', { id: id || this.$store.state.app.id, point });
+      return this.$store.dispatch('map/push', {
+        id: id || this.$store.state.app.id,
+        point,
+      });
     },
-    updateMarker(id: string, event: GeolocationPosition): void {
+    updateMarker(id: string, event: GeolocationPosition): Point {
       const position: Point = {
         lat: parseFloat(event.coords.latitude.toFixed(8)),
         lng: parseFloat(event.coords.longitude.toFixed(8)),
@@ -81,6 +103,8 @@ export default defineComponent({
         id,
         position,
       });
+
+      return position;
     },
     showError(error: GeolocationPositionError): void {
       this.$q.notify(error.message);
@@ -113,25 +137,45 @@ export default defineComponent({
 
     $q.notify('Fetching geolocation...');
 
-    navigator.geolocation.getCurrentPosition((position: GeolocationPosition) => {
-      $q.notify('Current position fetched!');
+    navigator.geolocation.getCurrentPosition(
+      (position: GeolocationPosition) => {
+        $q.notify('Current position fetched!');
 
-      this.changeCenter({
-        lat: parseFloat(position.coords.latitude.toFixed(8)),
-        lng: parseFloat(position.coords.longitude.toFixed(8)),
-      });
-
-      this.addMarker(position)
-        .then(() => {
-          navigator.geolocation.watchPosition((position: GeolocationPosition) => {
-            this.updateMarker(this.$store.state.app.id, position);
-          }, this.showError.bind(this));
-        })
-        .catch((error) => {
-          console.error(error);
-          $q.notify(JSON.stringify(error));
+        this.changeCenter({
+          lat: parseFloat(position.coords.latitude.toFixed(8)),
+          lng: parseFloat(position.coords.longitude.toFixed(8)),
         });
-    }, this.showError.bind(this));
+
+        this.addMarker(position)
+          .then(() => {
+            navigator.geolocation.watchPosition(
+              (position: GeolocationPosition) => {
+                const point = this.updateMarker(
+                  this.$store.state.app.id,
+                  position
+                );
+
+                for (const [id, connection] of Object.entries(
+                  this.$store.state.app.group
+                )) {
+                  connection.send({
+                    status: 'update',
+                    id: this.$store.state.app.id,
+                    meta: id,
+                    coords: point,
+                  });
+                }
+              },
+              this.showError.bind(this)
+            );
+          })
+          .catch((error) => {
+            console.error(error);
+            $q.notify(JSON.stringify(error));
+          });
+      },
+      this.showError.bind(this)
+    );
   },
 });
 </script>

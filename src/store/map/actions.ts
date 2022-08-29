@@ -1,4 +1,3 @@
-import { point } from 'leaflet';
 import { ActionTree } from 'vuex';
 import { StateInterface } from '../index';
 import { HistoryPoint, MapStateInterface, Point, UniquePoint } from './state';
@@ -8,9 +7,19 @@ interface PushObject {
   point: UniquePoint;
 }
 
+interface UpdateObject {
+  id: string;
+  position: Point;
+}
+
 const actions: ActionTree<MapStateInterface, StateInterface> = {
   updateCenter({ commit }, center: Point) {
-    if (Array.isArray(center) && center.length === 2 && !isNaN(center.lat) && !isNaN(center.lng)) {
+    if (
+      Array.isArray(center) &&
+      center.length === 2 &&
+      !isNaN(center.lat) &&
+      !isNaN(center.lng)
+    ) {
       commit('updateCenter', center);
     }
   },
@@ -35,10 +44,17 @@ const actions: ActionTree<MapStateInterface, StateInterface> = {
     point.history.push(currentPoint);
     commit('push', { id, point });
   },
-  update({ commit }, { id, position }) {
+  update({ commit, getters, dispatch }, { id, position }: UpdateObject) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    if (!point) {
-      throw new Error('ID mancante');
+    if (!getters.getPoint(id)) {
+      const point: UniquePoint = {
+        lat: position.lat,
+        lng: position.lng,
+        history: [],
+      };
+
+      void dispatch('push', { id, point });
+      return;
     }
 
     commit('update', { id, position });

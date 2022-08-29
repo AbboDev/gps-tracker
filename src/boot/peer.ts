@@ -7,7 +7,9 @@ export default boot(({ store }) => {
   const state = store.state as StateInterface;
 
   if (!state.app.id) {
-    throw new Error("C'è stato un errore durante la connessione. Riavviare l'app");
+    throw new Error(
+      "C'è stato un errore durante la connessione. Riavviare l'app"
+    );
   }
 
   const peer = new Peer(state.app.id);
@@ -17,6 +19,11 @@ export default boot(({ store }) => {
       console.log('My peer ID is: ' + id);
     })
     .on('connection', (connection) => {
+      void store.dispatch('app/registerConnection', {
+        id: connection.peer,
+        connection,
+      });
+
       connection.on('data', onData);
 
       connection.on('open', () => {

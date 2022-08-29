@@ -1,3 +1,4 @@
+import { Store } from '../store';
 import { Dialog } from 'quasar';
 
 export interface PeerMessage {
@@ -27,26 +28,37 @@ export const onData = (ping: unknown) => {
 
   let message = 'Ops!';
   let title = 'Qualcosa è andato storto';
+  let dialog = false;
 
   switch (ping.status) {
     case 'first':
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       message = `Un nuovo dispositivo si è unito al tuo gruppo. Il suo ID è ${ping.id}`;
       title = 'Congratulazioni!';
+      dialog = true;
       break;
     case 'first_2':
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       message = `Hai aggiunto con successo il dispositivo ${ping.id}`;
       title = 'Congratulazioni!';
+      dialog = true;
       break;
 
     default:
+      console.debug({
+        id: ping.id,
+        position: ping.coords,
+      });
+      void Store.dispatch('map/update', {
+        id: ping.id,
+        position: ping.coords,
+      });
       break;
   }
 
-  Dialog.create({
-    dark: true,
-    title,
-    message,
-  });
+  if (dialog) {
+    Dialog.create({
+      dark: true,
+      title,
+      message,
+    });
+  }
 };

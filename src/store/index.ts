@@ -1,10 +1,6 @@
 import { store } from 'quasar/wrappers';
 import { InjectionKey } from 'vue';
-import {
-  createStore,
-  Store as VuexStore,
-  useStore as vuexUseStore,
-} from 'vuex';
+import { createStore, Store as VuexStore, useStore as vuexUseStore } from 'vuex';
 
 import map from './map';
 import app from './app';
@@ -36,21 +32,22 @@ declare module '@vue/runtime-core' {
 }
 
 // provide typings for `useStore` helper
-export const storeKey: InjectionKey<VuexStore<StateInterface>> =
-  Symbol('vuex-key');
+export const storeKey: InjectionKey<VuexStore<StateInterface>> = Symbol('vuex-key');
+
+const Store = createStore<StateInterface>({
+  modules: {
+    map,
+    app,
+  },
+
+  // enable strict mode (adds overhead!)
+  // for dev mode and --debug builds only
+  strict: !!process.env.DEBUGGING,
+});
+
+export { Store };
 
 export default store(function (/* { ssrContext } */) {
-  const Store = createStore<StateInterface>({
-    modules: {
-      map,
-      app,
-    },
-
-    // enable strict mode (adds overhead!)
-    // for dev mode and --debug builds only
-    strict: !!process.env.DEBUGGING,
-  });
-
   return Store;
 });
 
